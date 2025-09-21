@@ -110,7 +110,7 @@ local function moveToTarget(targetName, toggleButton)
     local target = getClosestTarget(HumanoidRootPart, targetName)
     if not target then return end
 
-    local targetPos = target:GetPivot().Position + Vector3.new(0,0,0)
+    local targetPos = target:GetPivot().Position
     local speed = tonumber(SpeedBox.Text) or 25.5
     local reachDistance = tonumber(RangeBox.Text) or 5
     local reached = false
@@ -138,11 +138,11 @@ end
 
 -- Categories
 local categories = {
-    ["Node"] = {"Tin Node", "Copper Node", "Stone Node"},
+    ["Node"] = {"Tin Node", "Copper Node", "Stone Node", "Marble Node", "Iron Node"},
     ["TownHall"] = {"TownHall1", "TownHall2", "TownHall3", "Blacksmith Shop"},
     ["Food/Plants"] = {"Prickly Pear", "Fiber Plant", "Apple", "Corn Plant", "Tree"},
     ["Animals"] = {"Cow", "Sheep"},
-    ["Speed"] = {"Speed"},
+    ["Target Speed"] = {"Speed"}, -- Burayı değiştirdik
     ["Range"] = {"Range"},
     ["Player Speed"] = {"Player Speed"}
 }
@@ -253,7 +253,7 @@ local function showCategory(catName)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local relativeX = math.clamp(input.Position.X - sliderBar.AbsolutePosition.X,0,sliderBar.AbsoluteSize.X)
                     local ratio = relativeX/sliderBar.AbsoluteSize.X
-                    PlayerSpeed = math.floor(ratio * MaxPlayerSpeed * 100)/100  -- 0.1 hassasiyet
+                    PlayerSpeed = math.floor(ratio * MaxPlayerSpeed * 100)/100
                     sliderFill.Size = UDim2.new(ratio,0,1,0)
                     sliderButton.Position = UDim2.new(ratio,0,0,0)
                     speedLabel.Text = tostring(PlayerSpeed)
@@ -336,7 +336,7 @@ local function showCategory(catName)
 end
 
 -- Category tabs
-local categoriesList = {"Node", "TownHall", "Food/Plants", "Animals", "Speed", "Range", "Player Speed"}
+local categoriesList = {"Node", "TownHall", "Food/Plants", "Animals", "Target Speed", "Range", "Player Speed"}
 local menuWidth = MenuFrame.Size.X.Offset
 local padding = 5
 local buttonHeight = 35
