@@ -108,7 +108,7 @@ local function moveToTarget(targetName, toggleButton)
     local target = getClosestTarget(HumanoidRootPart, targetName)
     if not target then return end
 
-    local targetPos = target:GetPivot().Position + Vector3.new(0,5,0)
+    local targetPos = target:GetPivot().Position + Vector3.new(0,0,0)
     local speed = tonumber(SpeedBox.Text) or 25.5
     local reachDistance = tonumber(RangeBox.Text) or 5
     local reached = false
@@ -253,7 +253,7 @@ local function showCategory(catName)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local relativeX = math.clamp(input.Position.X - sliderBar.AbsolutePosition.X,0,sliderBar.AbsoluteSize.X)
                     local ratio = relativeX/sliderBar.AbsoluteSize.X
-                    PlayerSpeed = math.floor(ratio*25) + 5
+                    PlayerSpeed = math.floor(ratio*25) + 1
                     sliderFill.Size = UDim2.new(ratio,0,1,0)
                     sliderButton.Position = UDim2.new(ratio,0,0,0)
                     speedLabel.Text = tostring(PlayerSpeed)
