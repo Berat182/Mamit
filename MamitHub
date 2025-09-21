@@ -77,10 +77,10 @@ makeDraggable(MenuFrame)
 
 -- Speed ve Range kutuları (arka planda kullanılacak)
 local SpeedBox = Instance.new("TextBox")
-SpeedBox.Text = "25.5"
+SpeedBox.Text = "16"
 
 local RangeBox = Instance.new("TextBox")
-RangeBox.Text = "5" -- default mesafe
+RangeBox.Text = "7" -- default mesafe
 
 -- Hedef bulma ve hareket fonksiyonları
 local connections = {}
