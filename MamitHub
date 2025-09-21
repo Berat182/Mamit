@@ -81,7 +81,8 @@ local SpeedBox = Instance.new("TextBox")
 SpeedBox.Text = "16"
 local RangeBox = Instance.new("TextBox")
 RangeBox.Text = "7"
-local PlayerSpeed = 1
+local PlayerSpeed = 1  -- Başlangıç player speed
+local MaxPlayerSpeed = 20  -- Slider maksimum hızı
 
 -- Target detection
 local connections = {}
@@ -230,7 +231,7 @@ local function showCategory(catName)
             sliderBar.Parent = ContentFrame
 
             local sliderFill = Instance.new("Frame")
-            sliderFill.Size = UDim2.new(PlayerSpeed/50,0,1,0)
+            sliderFill.Size = UDim2.new(PlayerSpeed/MaxPlayerSpeed,0,1,0)
             sliderFill.BackgroundColor3 = Color3.fromRGB(0,255,0)
             sliderFill.Parent = sliderBar
 
@@ -252,7 +253,7 @@ local function showCategory(catName)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     local relativeX = math.clamp(input.Position.X - sliderBar.AbsolutePosition.X,0,sliderBar.AbsoluteSize.X)
                     local ratio = relativeX/sliderBar.AbsoluteSize.X
-                    PlayerSpeed = math.floor(ratio*25.5) + 1
+                    PlayerSpeed = math.floor(ratio * MaxPlayerSpeed * 10)/10  -- 0.1 hassasiyet
                     sliderFill.Size = UDim2.new(ratio,0,1,0)
                     sliderButton.Position = UDim2.new(ratio,0,0,0)
                     speedLabel.Text = tostring(PlayerSpeed)
