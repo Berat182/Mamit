@@ -81,8 +81,8 @@ local SpeedBox = Instance.new("TextBox")
 SpeedBox.Text = "16"
 local RangeBox = Instance.new("TextBox")
 RangeBox.Text = "7"
-local PlayerSpeed = 0.01  -- Başlangıç player speed
-local MaxPlayerSpeed = 2  -- Slider maksimum hızı
+local PlayerSpeed = 1  -- Başlangıç player speed
+local MaxPlayerSpeed = 5  -- Slider maksimum hızı
 
 -- Target detection
 local connections = {}
