@@ -2,12 +2,13 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
+local CoreGui = game:GetService("CoreGui")
 
--- Create GUI
+-- Create GUI in CoreGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "TargetController"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = CoreGui
 
 -- Menu toggle button
 local MenuToggle = Instance.new("TextButton")
@@ -212,7 +213,6 @@ local function showCategory(catName)
             startY = startY + 55
 
         elseif name == "Player Speed" then
-            -- Slider label
             local speedLabel = Instance.new("TextLabel")
             speedLabel.Size = UDim2.new(0, 60, 0, 25)
             speedLabel.Position = UDim2.new(0, 0, 0, startY)
@@ -223,7 +223,6 @@ local function showCategory(catName)
             speedLabel.TextScaled = true
             speedLabel.Parent = ContentFrame
 
-            -- Slider bar
             local sliderBar = Instance.new("Frame")
             sliderBar.Size = UDim2.new(0,220,0,20)
             sliderBar.Position = UDim2.new(0,0,0,startY+30)
@@ -260,7 +259,6 @@ local function showCategory(catName)
                 end
             end)
 
-            -- Toggle button for player speed
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(0, 220, 0, 35)
             btn.Position = UDim2.new(0,0,0,startY+60)
@@ -283,7 +281,6 @@ local function showCategory(catName)
                 btn.Text = "Player Speed "..(buttonStates[catName][name] and "ON" or "OFF")
             end)
 
-            -- Player movement
             RunService.RenderStepped:Connect(function()
                 if buttonStates[catName][name] then
                     local playerChar = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -299,7 +296,6 @@ local function showCategory(catName)
             startY = startY + 105
 
         else
-            -- Normal target buttons
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(0, 220, 0, 45)
             btn.Position = UDim2.new(0, 0, 0, startY)
