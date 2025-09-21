@@ -80,7 +80,7 @@ local SpeedBox = Instance.new("TextBox")
 SpeedBox.Text = "16"
 local RangeBox = Instance.new("TextBox")
 RangeBox.Text = "7"
-local PlayerSpeed = 16
+local PlayerSpeed = 25.5
 
 -- Target detection
 local connections = {}
