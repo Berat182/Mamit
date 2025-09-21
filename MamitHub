@@ -289,7 +289,7 @@ local function showCategory(catName)
                     local humanoid = playerChar:WaitForChild("Humanoid")
                     local moveDir = humanoid.MoveDirection
                     if moveDir.Magnitude > 0 then
-                        root.CFrame = root.CFrame + moveDir.Unit * (PlayerSpeed * 0.01)
+                        root.CFrame = root.CFrame + moveDir.Unit * (PlayerSpeed * 0.1)
                     end
                 end
             end)
