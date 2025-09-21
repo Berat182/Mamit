@@ -1,0 +1,279 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI oluştur
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "TargetController"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Menü açma/kapama toggle
+local MenuToggle = Instance.new("TextButton")
+MenuToggle.Size = UDim2.new(0, 55, 0, 55)
+MenuToggle.Position = UDim2.new(0, 15, 0, 15)
+MenuToggle.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MenuToggle.BackgroundTransparency = 0.3
+MenuToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+MenuToggle.Text = "🗿"  -- Toggle buton emoji
+MenuToggle.Font = Enum.Font.GothamBold
+MenuToggle.TextScaled = true
+MenuToggle.AutoButtonColor = false
+MenuToggle.Parent = ScreenGui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 12)
+toggleCorner.Parent = MenuToggle
+
+-- Menü Frame
+local MenuFrame = Instance.new("Frame")
+MenuFrame.Size = UDim2.new(0, 260, 0, 250)
+MenuFrame.Position = UDim2.new(0, 15, 0, 75)
+MenuFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MenuFrame.BackgroundTransparency = 0.25
+MenuFrame.BorderSizePixel = 0
+MenuFrame.Visible = false
+MenuFrame.Parent = ScreenGui
+
+local menuCorner = Instance.new("UICorner")
+menuCorner.CornerRadius = UDim.new(0, 16)
+menuCorner.Parent = MenuFrame
+
+-- Toggle buton click
+MenuToggle.MouseButton1Click:Connect(function()
+    MenuFrame.Visible = not MenuFrame.Visible
+end)
+
+-- Mobil taşınabilirlik fonksiyonu
+local function makeDraggable(guiObject)
+    local dragging = false
+    local dragStart
+    local startPos
+
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = guiObject.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    guiObject.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local delta = input.Position - dragStart
+            guiObject.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+makeDraggable(MenuToggle)
+makeDraggable(MenuFrame)
+
+-- Speed ve Range kutuları (arka planda kullanılacak)
+local SpeedBox = Instance.new("TextBox")
+SpeedBox.Text = "25.5"
+
+local RangeBox = Instance.new("TextBox")
+RangeBox.Text = "5" -- default mesafe
+
+-- Hedef bulma ve hareket fonksiyonları
+local connections = {}
+local function getClosestTargetByName(HumanoidRootPart, targetName)
+    local closest
+    local shortestDistance = math.huge
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and obj.Name == targetName then
+            local pivot = obj:GetPivot().Position
+            local distance = (HumanoidRootPart.Position - pivot).Magnitude
+            if distance < shortestDistance then
+                shortestDistance = distance
+                closest = obj
+            end
+        end
+    end
+    return closest
+end
+
+local function moveToTarget(targetName, toggleButton)
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    local target = getClosestTargetByName(HumanoidRootPart, targetName)
+
+    if not target then return end
+
+    local targetPos = target:GetPivot().Position + Vector3.new(0,0,0)
+    local speed = tonumber(SpeedBox.Text) or 17
+    local reachDistance = tonumber(RangeBox.Text) or 5
+    local reached = false
+
+    connections[targetName] = RunService.Heartbeat:Connect(function(deltaTime)
+        if reached or not Character.Parent or toggleButton.Text:find("OFF") then
+            connections[targetName]:Disconnect()
+            return
+        end
+
+        local direction = (targetPos - HumanoidRootPart.Position)
+        local distance = direction.Magnitude
+
+        if distance < reachDistance then
+            reached = true
+            return
+        end
+
+        HumanoidRootPart.CFrame = HumanoidRootPart.CFrame + direction.Unit * speed * deltaTime
+    end)
+end
+
+-- Kategoriler
+local categories = {
+    ["Node"] = {"Tin Node", "Copper Node", "Stone Node"},
+    ["TownHall"] = {"TownHall1", "TownHall2", "TownHall3", "Blacksmith Shop"}, -- Blacksmith eklendi
+    ["Food/Plants"] = {"Prickly Pear", "Fiber Plant", "Apple", "Corn Plant", "Tree"},
+    ["Animals"] = {"Cow", "Sheep"},
+    ["Speed"] = {"Speed"},
+    ["Range"] = {"Range"}
+}
+
+-- Scrollable içerik
+local ContentFrame = Instance.new("ScrollingFrame")
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ScrollBarThickness = 6
+ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+ContentFrame.Size = UDim2.new(1, -20, 1, -60)
+ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255,255,255)
+ContentFrame.ScrollBarImageTransparency = 0.3
+ContentFrame.Parent = MenuFrame
+
+-- Kategori butonlarını gösterme fonksiyonu
+local function showCategory(catName)
+    ContentFrame:ClearAllChildren()
+    local startY = 0
+    for i, name in ipairs(categories[catName]) do
+        if name == "Speed" then
+            local speedInput = Instance.new("TextBox")
+            speedInput.Size = UDim2.new(0, 220, 0, 45)
+            speedInput.Position = UDim2.new(0, 20, 0, startY)
+            speedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            speedInput.BackgroundTransparency = 0.2
+            speedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+            speedInput.PlaceholderText = "Speed"
+            speedInput.Text = SpeedBox.Text
+            speedInput.Font = Enum.Font.SourceSansBold
+            speedInput.TextScaled = true
+            speedInput.ClearTextOnFocus = false
+            speedInput.Parent = ContentFrame
+
+            local speedCorner = Instance.new("UICorner")
+            speedCorner.CornerRadius = UDim.new(0, 12)
+            speedCorner.Parent = speedInput
+
+            speedInput:GetPropertyChangedSignal("Text"):Connect(function()
+                SpeedBox.Text = speedInput.Text
+            end)
+
+            startY = startY + 55
+
+        elseif name == "Range" then
+            local rangeInput = Instance.new("TextBox")
+            rangeInput.Size = UDim2.new(0, 220, 0, 45)
+            rangeInput.Position = UDim2.new(0, 20, 0, startY)
+            rangeInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            rangeInput.BackgroundTransparency = 0.2
+            rangeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+            rangeInput.PlaceholderText = "Distance"
+            rangeInput.Text = RangeBox.Text
+            rangeInput.Font = Enum.Font.SourceSansBold
+            rangeInput.TextScaled = true
+            rangeInput.ClearTextOnFocus = false
+            rangeInput.Parent = ContentFrame
+
+            local rangeCorner = Instance.new("UICorner")
+            rangeCorner.CornerRadius = UDim.new(0, 12)
+            rangeCorner.Parent = rangeInput
+
+            rangeInput:GetPropertyChangedSignal("Text"):Connect(function()
+                RangeBox.Text = rangeInput.Text
+            end)
+
+            startY = startY + 55
+
+        else
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(0, 220, 0, 45)
+            btn.Position = UDim2.new(0, 0, 0, startY)
+            btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+            btn.TextColor3 = Color3.fromRGB(255,255,255)
+            btn.Text = name.." OFF"
+            btn.Font = Enum.Font.SourceSansBold
+            btn.TextScaled = true
+            btn.Parent = ContentFrame
+
+            local btnCorner = Instance.new("UICorner")
+            btnCorner.CornerRadius = UDim.new(0,12)
+            btnCorner.Parent = btn
+
+            btn.MouseButton1Click:Connect(function()
+                if btn.Text:find("OFF") then
+                    btn.Text = name.." ON"
+                    moveToTarget(name, btn)
+                else
+                    btn.Text = name.." OFF"
+                    if connections[name] then
+                        connections[name]:Disconnect()
+                    end
+                end
+            end)
+
+            startY = startY + 50
+        end
+    end
+    ContentFrame.CanvasSize = UDim2.new(0,0,0,startY)
+end
+
+-- Kategori sekme başlıkları
+local categoriesList = {"Node", "TownHall", "Food/Plants", "Animals", "Speed", "Range"}
+local menuWidth = MenuFrame.Size.X.Offset
+local padding = 5
+local buttonHeight = 35
+local buttonWidth = (menuWidth - (padding * (#categoriesList+1))) / #categoriesList
+
+local TabsScrollingFrame = Instance.new("ScrollingFrame")
+TabsScrollingFrame.Size = UDim2.new(1, -20, 0, buttonHeight + 10)
+TabsScrollingFrame.Position = UDim2.new(0, 10, 0, 10)
+TabsScrollingFrame.BackgroundTransparency = 1
+TabsScrollingFrame.ScrollBarThickness = 6
+TabsScrollingFrame.CanvasSize = UDim2.new(0, (#categoriesList)*(buttonWidth + padding) + padding, 0, buttonHeight)
+TabsScrollingFrame.Parent = MenuFrame
+
+local startX = padding
+for _, catName in ipairs(categoriesList) do
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Size = UDim2.new(0, buttonWidth, 0, buttonHeight)
+    tabBtn.Position = UDim2.new(0, startX, 0, 0)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    tabBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    tabBtn.Text = catName
+    tabBtn.Font = Enum.Font.SourceSansBold
+    tabBtn.TextScaled = true
+    tabBtn.Parent = TabsScrollingFrame
+
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.CornerRadius = UDim.new(0,8)
+    tabCorner.Parent = tabBtn
+
+    tabBtn.MouseButton1Click:Connect(function()
+        showCategory(catName)
+    end)
+
+    startX = startX + buttonWidth + padding
+end
+
+-- İlk kategori varsayılan olarak göster
+showCategory(categoriesList[1])
