@@ -142,7 +142,7 @@ local categories = {
     ["TownHall"] = {"TownHall1", "TownHall2", "TownHall3", "Blacksmith Shop"},
     ["Food/Plants"] = {"Prickly Pear", "Fiber Plant", "Apple", "Corn Plant", "Tree"},
     ["Animals"] = {"Cow", "Sheep"},
-    ["Target Speed"] = {"Speed"}, -- Burayı değiştirdik
+    ["Target Speed"] = {"Speed"},
     ["Range"] = {"Range"},
     ["Player Speed"] = {"Player Speed"}
 }
@@ -165,30 +165,58 @@ local function showCategory(catName)
     for i, name in ipairs(categories[catName]) do
         local isOn = buttonStates[catName] and buttonStates[catName][name] or false
 
+        -- Target Speed slider
         if name == "Speed" then
-            local speedInput = Instance.new("TextBox")
-            speedInput.Size = UDim2.new(0, 220, 0, 45)
-            speedInput.Position = UDim2.new(0, 20, 0, startY)
-            speedInput.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-            speedInput.BackgroundTransparency = 0.2
-            speedInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-            speedInput.PlaceholderText = "Speed"
-            speedInput.Text = SpeedBox.Text
-            speedInput.Font = Enum.Font.SourceSansBold
-            speedInput.TextScaled = true
-            speedInput.ClearTextOnFocus = false
-            speedInput.Parent = ContentFrame
+            local speedLabel = Instance.new("TextLabel")
+            speedLabel.Size = UDim2.new(0, 60, 0, 25)
+            speedLabel.Position = UDim2.new(0, 0, 0, startY)
+            speedLabel.BackgroundTransparency = 1
+            speedLabel.TextColor3 = Color3.fromRGB(255,255,255)
+            speedLabel.Text = SpeedBox.Text
+            speedLabel.Font = Enum.Font.SourceSansBold
+            speedLabel.TextScaled = true
+            speedLabel.Parent = ContentFrame
 
-            local speedCorner = Instance.new("UICorner")
-            speedCorner.CornerRadius = UDim.new(0, 12)
-            speedCorner.Parent = speedInput
+            local sliderBar = Instance.new("Frame")
+            sliderBar.Size = UDim2.new(0,220,0,20)
+            sliderBar.Position = UDim2.new(0,0,0,startY+30)
+            sliderBar.BackgroundColor3 = Color3.fromRGB(70,70,70)
+            sliderBar.Parent = ContentFrame
 
-            speedInput:GetPropertyChangedSignal("Text"):Connect(function()
-                SpeedBox.Text = speedInput.Text
+            local sliderFill = Instance.new("Frame")
+            sliderFill.Size = UDim2.new(tonumber(SpeedBox.Text)/100,0,1,0)
+            sliderFill.BackgroundColor3 = Color3.fromRGB(0,255,0)
+            sliderFill.Parent = sliderBar
+
+            local sliderButton = Instance.new("TextButton")
+            sliderButton.Size = UDim2.new(0,20,1,0)
+            sliderButton.Position = UDim2.new(sliderFill.Size.X.Scale,0,0,0)
+            sliderButton.BackgroundColor3 = Color3.fromRGB(255,255,255)
+            sliderButton.Text = ""
+            sliderButton.Parent = sliderBar
+
+            local dragging = false
+            sliderButton.MouseButton1Down:Connect(function() dragging = true end)
+            UIS.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = false
+                end
+            end)
+            UIS.InputChanged:Connect(function(input)
+                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local relativeX = math.clamp(input.Position.X - sliderBar.AbsolutePosition.X,0,sliderBar.AbsoluteSize.X)
+                    local ratio = relativeX/sliderBar.AbsoluteSize.X
+                    local speedValue = math.floor(ratio * 100)
+                    SpeedBox.Text = tostring(speedValue)
+                    sliderFill.Size = UDim2.new(ratio,0,1,0)
+                    sliderButton.Position = UDim2.new(ratio,0,0,0)
+                    speedLabel.Text = tostring(speedValue)
+                end
             end)
 
             startY = startY + 55
 
+        -- Range slider
         elseif name == "Range" then
             local rangeInput = Instance.new("TextBox")
             rangeInput.Size = UDim2.new(0, 220, 0, 45)
@@ -213,6 +241,7 @@ local function showCategory(catName)
 
             startY = startY + 55
 
+        -- Player Speed slider
         elseif name == "Player Speed" then
             local speedLabel = Instance.new("TextLabel")
             speedLabel.Size = UDim2.new(0, 60, 0, 25)
@@ -296,6 +325,7 @@ local function showCategory(catName)
 
             startY = startY + 105
 
+        -- Normal target buttons
         else
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(0, 220, 0, 45)
